@@ -2,10 +2,17 @@
   <div id="app">
     <el-container>
       <el-header>
-        <h1>Excel处理器</h1>
+        <div class="header-content">
+          <h1>Excel处理器</h1>
+          <el-menu :default-active="activeMenu" class="el-menu-demo" mode="horizontal" @select="handleMenuSelect">
+            <el-menu-item index="excel">Excel处理</el-menu-item>
+            <el-menu-item index="datasource">数据源管理</el-menu-item>
+          </el-menu>
+        </div>
       </el-header>
       <el-main>
-        <ExcelProcessor />
+        <ExcelProcessor v-if="activeMenu === 'excel'" />
+        <DataSourceManager v-if="activeMenu === 'datasource'" />
       </el-main>
     </el-container>
   </div>
@@ -13,11 +20,23 @@
 
 <script>
 import ExcelProcessor from './components/ExcelProcessor.vue'
+import DataSourceManager from './components/DataSourceManager.vue'
 
 export default {
   name: 'App',
   components: {
-    ExcelProcessor
+    ExcelProcessor,
+    DataSourceManager
+  },
+  data() {
+    return {
+      activeMenu: 'excel'
+    }
+  },
+  methods: {
+    handleMenuSelect(key) {
+      this.activeMenu = key
+    }
   }
 }
 </script>
@@ -33,9 +52,16 @@ export default {
 .el-header {
   background-color: #409EFF;
   color: white;
-  text-align: center;
+  padding: 0 20px;
+  height: 60px;
   line-height: 60px;
-  padding: 0;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
 }
 
 .el-header h1 {
@@ -45,5 +71,19 @@ export default {
 
 .el-main {
   padding: 20px;
+}
+
+.el-menu-demo {
+  background-color: transparent;
+  border: none;
+}
+
+.el-menu-demo .el-menu-item {
+  color: white;
+}
+
+.el-menu-demo .el-menu-item.is-active {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 </style>

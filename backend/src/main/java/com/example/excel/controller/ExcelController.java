@@ -58,11 +58,17 @@ public class ExcelController {
             String sheetName = (String) request.get("sheetName");
             List<Map<String, Object>> data = (List<Map<String, Object>>) request.get("data");
             List<String> selectedColumns = (List<String>) request.get("selectedColumns");
+            String databaseType = (String) request.get("databaseType");
             
-            excelService.saveToDatabase(fileName, sheetName, data, selectedColumns);
+            if (databaseType == null || databaseType.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("数据库类型不能为空");
+            }
+            
+            excelService.saveToDatabase(fileName, sheetName, data, selectedColumns, databaseType);
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "数据保存成功");
+            response.put("databaseType", databaseType);
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {

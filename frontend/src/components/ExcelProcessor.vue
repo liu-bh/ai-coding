@@ -184,10 +184,23 @@
             </el-table>
             
             <div class="action-buttons" style="margin-top: 20px;">
+              <el-select 
+                v-model="selectedDataSource[sheetName]" 
+                placeholder="选择数据源"
+                style="width: 200px; margin-right: 10px;"
+              >
+                <el-option
+                  v-for="dataSource in dataSources"
+                  :key="dataSource.id"
+                  :label="dataSource.name"
+                  :value="dataSource.id"
+                />
+              </el-select>
               <el-button 
                 type="success" 
                 @click="saveToDatabase(sheetName)"
                 :loading="saving"
+                :disabled="!selectedDataSource[sheetName]"
               >
                 保存到数据库
               </el-button>
@@ -252,6 +265,7 @@
 
 <script>
 import excelApi from '@/api/excel'
+import datasourceApi from '@/api/datasource'
 
 export default {
   name: 'ExcelProcessor',
@@ -273,13 +287,35 @@ export default {
         defaultValue: ''
       },
       headerEndRows: {},
+      selectedDatabaseType: {},
+      selectedDataSource: {},
+      dataSources: [],
+      databaseTypes: [
+        { value: 'mysql', label: 'MySQL' },
+        { value: 'postgresql', label: 'PostgreSQL' },
+        { value: 'oracle', label: 'Oracle' },
+        { value: 'sqlserver', label: 'SQL Server' },
+        { value: 'h2', label: 'H2 (内存数据库)' }
+      ],
       draggedIndex: -1
     }
+  },
+  mounted() {
+    this.loadDataSources()
   },
   methods: {
     handleFileChange(file) {
       this.selectedFile = file.raw
       this.fileList = [file]
+    },
+    
+    async loadDataSources() {
+      try {
+        const response = await datasourceApi.getDataSources()
+        this.dataSources = response.data
+      } catch (error) {
+        console.error('加载数据源失败:', error)
+      }
     },
     
     async uploadFile() {
@@ -303,6 +339,7 @@ export default {
             this.$set(this.selectedColumns, sheetName, [...this.excelData.sheetHeaders[sheetName]])
             this.initColumnConfig(sheetName)
             this.$set(this.headerEndRows, sheetName, 1)
+            this.$set(this.selectedDatabaseType, sheetName, 'h2') // 默认选择H2
           })
           
           this.$message.success('文件上传并解析成功')
@@ -487,17 +524,27 @@ export default {
         return
       }
       
+      if (!this.selectedDataSource[sheetName]) {
+        this.$message.warning('请选择数据源')
+        return
+      }
+      
       this.saving = true
       try {
         const data = {
+          dataSourceId: this.selectedDataSource[sheetName],
           fileName: this.excelData.fileName,
           sheetName: sheetName,
           data: this.excelData.sheetsData[sheetName],
           selectedColumns: this.selectedColumns[sheetName]
         }
         
-        await excelApi.saveToDatabase(data)
-        this.$message.success('数据保存成功')
+        const response = await datasourceApi.saveDataToDataSource(data)
+        if (response.data.success) {
+          this.$message.success(`数据保存成功到数据源: ${response.data.dataSourceName}`)
+        } else {
+          this.$message.error('数据保存失败')
+        }
         await this.loadSavedData()
       } catch (error) {
         this.$message.error('数据保存失败: ' + (error.response?.data || error.message))

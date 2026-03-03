@@ -116,7 +116,7 @@ public class ExcelService {
         return excelDataDto;
     }
 
-    public void saveToDatabase(String fileName, String sheetName, List<Map<String, Object>> data, List<String> selectedColumns) {
+    public void saveToDatabase(String fileName, String sheetName, List<Map<String, Object>> data, List<String> selectedColumns, String databaseType) {
         for (int i = 0; i < data.size(); i++) {
             Map<String, Object> row = data.get(i);
             for (String column : selectedColumns) {
@@ -128,6 +128,7 @@ public class ExcelService {
                     excelData.setColumnName(column);
                     excelData.setColumnValue(String.valueOf(row.get(column)));
                     excelData.setDataType(getDataType(row.get(column)));
+                    excelData.setDatabaseType(databaseType);
                     excelData.setIsSelected(true);
                     excelDataRepository.save(excelData);
                 }

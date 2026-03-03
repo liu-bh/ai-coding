@@ -28,6 +28,9 @@ public class ExcelData {
     @Column(name = "data_type")
     private String dataType;
     
+    @Column(name = "database_type")
+    private String databaseType;
+    
     @Column(name = "is_selected")
     private Boolean isSelected;
     
@@ -97,6 +100,14 @@ public class ExcelData {
 
     public void setDataType(String dataType) {
         this.dataType = dataType;
+    }
+
+    public String getDatabaseType() {
+        return databaseType;
+    }
+
+    public void setDatabaseType(String databaseType) {
+        this.databaseType = databaseType;
     }
 
     public Boolean getIsSelected() {
